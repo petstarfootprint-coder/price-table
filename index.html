@@ -1,8 +1,17 @@
 <!doctype html>
 <html lang="zh-Hant">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>星足跡｜費用試算（正式價）</title>
+<meta name="description" content="輸入毛孩體重，立即估算水化／火化、個別／團體服務收費。星足跡寵物禮儀｜透明公開的價格與貼心諮詢。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%232E7D6B'/%3E%3Cpath d='M22 30a6 6 0 1 1 0-12 6 6 0 0 1 0 12zm20 0a6 6 0 1 1 0-12 6 6 0 0 1 0 12zM20 40c0-6 6-10 12-10s12 4 12 10-24 6-24 0z' fill='white'/%3E%3C/svg%3E">
+<meta property="og:title" content="星足跡｜費用試算（正式價）">
+<meta property="og:description" content="輸入毛孩體重，立即估算水化／火化、個別／團體服務收費。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://petstarfootprint-coder.github.io/price-table/">
+<meta property="og:image" content="https://petstarfootprint-coder.github.io/price-table/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
 <style>
   :root{--pri:#2E7D6B;--bg:#F7FBF9;--muted:#566;--r:14px;--shadow:0 8px 24px #0002}
   *{box-sizing:border-box}
@@ -23,16 +32,37 @@
   .note{font-size:12px;color:#667}
   .opt{margin-top:8px;font-size:13px}
   label.opt-inline{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
-  @media (max-width:900px){.wrap{grid-template-columns:1fr} h1{text-align:center} .lead{text-align:center} }
-  /* Button */
+  /* CTA bottom */
   .cta-bottom{max-width:980px;margin:0 auto;padding:24px 16px 40px;text-align:center}
-  .btn-solid{display:inline-block;margin:0 8px;padding:12px 20px;border-radius:999px;background:var(--pri);color:#fff;text-decoration:none;font-weight:700}
+  .btn-solid{display:inline-block;margin:0 8px;padding:12px 20px;border-radius:999px;background:var(--pri);color:#fff;text-decoration:none;font-weight:700;box-shadow:0 6px 18px #0002}
+  /* Mobile tweaks */
+  @media (max-width:900px){
+    .wrap{grid-template-columns:1fr}
+    h1{text-align:center}
+    .lead{text-align:center}
+    .btn-solid{width:100%;padding:14px 20px}
+  }
+  /* Print-friendly */
+  @media print{
+    .cta-bottom{display:none}
+    body{background:#fff}
+    .card{box-shadow:none;border:1px solid #ddd}
+  }
+  /* Tiny utility */
+  .muted{color:#667;font-size:12px}
+  .row2{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px}
+  .chip{border:1px solid #e5eee9;border-radius:999px;padding:4px 8px;font-size:12px}
+  .tools{display:flex;gap:8px;align-items:center;margin-top:8px}
+  .tools button,.tools a{border:1px solid #dbe7e2;background:#fff;border-radius:10px;padding:6px 10px;cursor:pointer;text-decoration:none;color:#2E7D6B}
+  .tools button:hover,.tools a:hover{background:#f1f7f5}
 </style>
+</head>
 <body>
   <h1>費用試算</h1>
   <p class="lead">輸入毛孩體重，即時查看水化／火化、個別／團體估價。</p>
 
   <div id="calc" class="wrap">
+    <!-- 水化 -->
     <div class="card" id="aqua">
       <h3>水化（Bio Cremation）</h3>
       <div class="sub">依 <b>實際體重</b> 計價；選擇「個別 / 團體」、是否特寵（≤2kg），並輸入體重（kg）。</div>
@@ -44,19 +74,26 @@
           </div>
           <div class="opt">
             <label class="opt-inline"><input id="aquaSpecial" type="checkbox"> 特寵（≤2kg：倉鼠/兔子/烏龜/鳥等）</label>
+            <div class="row2 muted"><span class="chip">可輸入小數</span><span class="chip">例：1.25 kg</span></div>
           </div>
         </div>
         <div>
-          <input id="kgA" type="number" step="0.01" min="0.01" placeholder="體重（kg）" aria-label="體重（kg）">
+          <input id="kgA" type="number" step="0.01" min="0.05" placeholder="體重（kg），例：1.25" aria-label="體重（kg）">
         </div>
       </div>
       <div class="out">
         <div>試算金額</div>
         <div class="price" id="pA">—</div>
         <div class="note" id="nA">＊以現場量重與客服確認為準。水化享 10 天免費冰存，超過每日 100 元。</div>
+        <div class="tools">
+          <button id="copyA">複製試算</button>
+          <a id="lineA" href="#" target="_blank" rel="noopener">LINE 詢價</a>
+          <span class="muted" id="extraA" style="display:none">（已含超重加價計算）</span>
+        </div>
       </div>
     </div>
 
+    <!-- 火化 -->
     <div class="card" id="crem">
       <h3>傳統火化</h3>
       <div class="sub">依 <b>實際體重</b> 計價；選擇「個別 / 團體」、是否特寵（≤2kg），並輸入體重（kg）。</div>
@@ -68,26 +105,74 @@
           </div>
           <div class="opt">
             <label class="opt-inline"><input id="cremSpecial" type="checkbox"> 特寵（≤2kg：倉鼠/兔子/烏龜/鳥等）</label>
+            <div class="row2 muted"><span class="chip">可輸入小數</span><span class="chip">例：1.25 kg</span></div>
           </div>
         </div>
         <div>
-          <input id="kgC" type="number" step="0.01" min="0.01" placeholder="體重（kg）" aria-label="體重（kg）">
+          <input id="kgC" type="number" step="0.01" min="0.05" placeholder="體重（kg），例：1.25" aria-label="體重（kg）">
         </div>
       </div>
       <div class="out">
         <div>試算金額</div>
         <div class="price" id="pC">—</div>
         <div class="note" id="nC">＊以現場量重與客服確認為準。火化享 10 天免費冰存，超過每日 100 元。</div>
+        <div class="tools">
+          <button id="copyC">複製試算</button>
+          <a id="lineC" href="#" target="_blank" rel="noopener">LINE 詢價</a>
+          <span class="muted" id="extraC" style="display:none">（已含超重加價計算）</span>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- 底部 CTA 區塊（只留完整價目） -->
+  <!-- 底部 CTA（僅留完整價目） -->
   <div class="cta-bottom">
     <a href="https://www.starfootprint.com.tw/service/4" target="_blank" rel="noopener" class="btn-solid">完整價目</a>
   </div>
 
+  <!-- FAQ 區（可自行增刪） -->
+  <div style="max-width:980px;margin:0 auto 60px;padding:0 16px">
+    <details>
+      <summary><b>特寵是哪些？</b></summary>
+      <div class="muted" style="margin-top:6px">一般指體重 ≤2kg 的小型寵物（例：倉鼠、兔子、烏龜、鳥等）。</div>
+    </details>
+    <details>
+      <summary><b>為什麼以體重計價？</b></summary>
+      <div class="muted" style="margin-top:6px">流程與耗材與體重密切相關；我們以「毛孩實際體重」計價，確保公平一致。</div>
+    </details>
+    <details>
+      <summary><b>可以嗎？</b></summary>
+      <div class="muted" style="margin-top:6px">可預約行程，現場人員將全程協助與解說。</div>
+    </details>
+  </div>
+
+  <!-- 無 JS 後備 -->
+  <noscript>
+    <div style="max-width:860px;margin:0 auto;padding:8px 16px">
+      <h3>費用一覽（簡版）</h3>
+      <div>水化－個別：≤1kg 5000｜≤10kg 6500｜≤20kg 7500｜≤30kg 8500｜≤35kg 9500｜>35kg 每10kg +1000</div>
+      <div>水化－團體：≤1kg 1500｜≤10kg 2000｜≤20kg 3000｜≤30kg 3500｜≤35kg 4000｜>35kg 每10kg +1000</div>
+      <div>火化－個別：≤10kg 5000｜≤20kg 6000｜≤35kg 7000｜>35kg 每10kg +1000</div>
+      <div>火化－團體：≤5kg 1500｜≤15kg 2500｜≤25kg 3500｜≤35kg 4000｜>35kg 每10kg +500</div>
+    </div>
+  </noscript>
+
 <script>
+  // ===== 可選：GA4 事件（把 G-XXXX 換成你的測量 ID；若無則自動略過） =====
+  (function(){
+    const GA_ID = ""; // 例：'G-XXXXXXXXXX'（若留空，追蹤不啟用）
+    if(GA_ID){
+      const s=document.createElement('script');
+      s.async=1; s.src='https://www.googletagmanager.com/gtag/js?id='+GA_ID;
+      document.head.appendChild(s);
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){ dataLayer.push(arguments); }
+      window.gtag = gtag;
+      gtag('js', new Date()); gtag('config', GA_ID);
+    }
+    window.track = function(ev, data){ if(window.gtag){ gtag('event', ev, data||{}); } }
+  })();
+
   // ===== 正式價與規則 =====
   const TIER = {
     aquamation: {
@@ -152,12 +237,15 @@
     return basePrice + extra;
   }
 
-  function setup(boxId, svcKey, kgId, priceId, specialId){
+  function setup(boxId, svcKey, kgId, priceId, specialId, extraId, copyId, lineId){
     const box = document.getElementById(boxId);
     const seg = box.querySelector(".seg");
     const kg  = document.getElementById(kgId);
     const out = document.getElementById(priceId);
     const sp  = document.getElementById(specialId);
+    const extra = document.getElementById(extraId);
+    const copyBtn = document.getElementById(copyId);
+    const lineBtn = document.getElementById(lineId);
     let mode = "individual";
 
     seg.addEventListener("click", e=>{
@@ -169,18 +257,50 @@
     kg.addEventListener("input", render);
     sp.addEventListener("change", render);
 
+    function summary(price){
+      const svc = (svcKey==='aquamation'?'水化':'火化');
+      const m = (mode==='individual'?'個別':'團體');
+      const v = parseFloat(kg.value)||0;
+      const specialTxt = (sp.checked && v<=2) ? '（特寵）' : '';
+      return `本次試算：${svc}／${m}${specialTxt}／${v.toFixed(2)} kg → ${nt(price)}`;
+    }
+
     function render(){
       const v = parseFloat(kg.value);
-      if(!v || v<=0){ out.textContent = "—"; return; }
+      if(!v || v<=0){ out.textContent = "—"; extra.style.display='none'; return; }
       const price = (svcKey==="aquamation")
         ? calcAquamation(v, mode, sp.checked)
         : calcCremation(v, mode, sp.checked);
       out.textContent = nt(price);
+      extra.style.display = (v>35) ? 'inline' : 'none';
+      // 更新 LINE 連結（請把 @011hfrsr 換成你的 LINE OA ID）
+      const msg = encodeURIComponent(summary(price));
+      const lineBase = "https://line.me/R/ti/p/@011hfrsr"; // TODO: 換成你的官方 LINE ID
+      lineBtn.href = `${lineBase}?text=${msg}`;
+      track('calc_view', {service: svcKey, mode});
     }
+
+    copyBtn.addEventListener('click', ()=>{
+      const v = parseFloat(kg.value);
+      if(!v || out.textContent==='—') return;
+      const s = out.textContent;
+      const svc = (svcKey==='aquamation'?'水化':'火化');
+      const m = (mode==='individual'?'個別':'團體');
+      const specialTxt = (sp.checked && (parseFloat(kg.value)||0)<=2) ? '（特寵）' : '';
+      const text = `星足跡 ${svc}／${m}${specialTxt} 試算\n體重：${(parseFloat(kg.value)||0).toFixed(2)} kg\n金額：${s}`;
+      navigator.clipboard?.writeText(text);
+      track('copy_quote', {service: svc, mode: m});
+      copyBtn.textContent = '已複製！';
+      setTimeout(()=>copyBtn.textContent='複製試算', 1200);
+    });
+
+    // 初始聚焦與首次渲染
+    if(kgId==='kgA') kg.focus();
+    render();
   }
 
-  setup("aqua","aquamation","kgA","pA","aquaSpecial");
-  setup("crem","cremation","kgC","pC","cremSpecial");
+  setup("aqua","aquamation","kgA","pA","aquaSpecial","extraA","copyA","lineA");
+  setup("crem","cremation","kgC","pC","cremSpecial","extraC","copyC","lineC");
 </script>
 </body>
 </html>
