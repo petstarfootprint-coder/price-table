@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-Hant">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>星足跡｜費用試算（正式價）</title>
+<style>
+  :root{--pri:#2E7D6B;--bg:#F7FBF9;--muted:#566;--r:14px;--shadow:0 8px 24px #0002}
+  *{box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,"Noto Sans TC",sans-serif;margin:0;background:var(--bg);color:#223}
+  h1{font-size:28px;margin:24px 16px 8px;text-align:left}
+  .lead{margin:0 16px 16px;color:#556;line-height:1.6}
+  .wrap{max-width:980px;margin:0 auto;padding:0 16px 8px;display:grid;gap:16px;grid-template-columns:1fr 1fr}
+  .card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);padding:16px}
+  h3{margin:0 0 8px 0}
+  .sub{color:var(--muted);font-size:13px;margin:4px 0 10px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .seg{display:inline-flex;border:1px solid #e5eee9;border-radius:999px;overflow:hidden}
+  .seg button{padding:6px 10px;border:0;background:#fff;cursor:pointer;font-weight:600}
+  .seg button.active{background:var(--pri);color:#fff}
+  input[type=number]{width:100%;padding:10px;border:1px solid #e6e6e6;border-radius:10px}
+  .out{margin-top:10px;padding:12px;border-radius:12px;background:#F7FBF9;border:1px dashed #dbe7e2}
+  .price{font-size:22px;font-weight:900;color:#2E7D6B}
+  .note{font-size:12px;color:#667}
+  .opt{margin-top:8px;font-size:13px}
+  label.opt-inline{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+  @media (max-width:900px){.wrap{grid-template-columns:1fr} h1{text-align:center} .lead{text-align:center} }
+  /* Button */
+  .cta-bottom{max-width:980px;margin:0 auto;padding:24px 16px 40px;text-align:center}
+  .btn-solid{display:inline-block;margin:0 8px;padding:12px 20px;border-radius:999px;background:var(--pri);color:#fff;text-decoration:none;font-weight:700}
+</style>
+<body>
+  <h1>費用試算</h1>
+  <p class="lead">輸入毛孩體重，即時查看水化／火化、個別／團體估價。</p>
+
+  <div id="calc" class="wrap">
+    <div class="card" id="aqua">
+      <h3>水化（Bio Cremation）</h3>
+      <div class="sub">依 <b>實際體重</b> 計價；選擇「個別 / 團體」、是否特寵（≤2kg），並輸入體重（kg）。</div>
+      <div class="row">
+        <div>
+          <div class="seg" role="tablist" aria-label="水化方式">
+            <button type="button" data-mode="individual" class="active">個別</button>
+            <button type="button" data-mode="group">團體</button>
+          </div>
+          <div class="opt">
+            <label class="opt-inline"><input id="aquaSpecial" type="checkbox"> 特寵（≤2kg：倉鼠/兔子/烏龜/鳥等）</label>
+          </div>
+        </div>
+        <div>
+          <input id="kgA" type="number" step="0.01" min="0.01" placeholder="體重（kg）" aria-label="體重（kg）">
+        </div>
+      </div>
+      <div class="out">
+        <div>試算金額</div>
+        <div class="price" id="pA">—</div>
+        <div class="note" id="nA">＊以現場量重與客服確認為準。水化享 10 天免費冰存，超過每日 100 元。</div>
+      </div>
+    </div>
+
+    <div class="card" id="crem">
+      <h3>傳統火化</h3>
+      <div class="sub">依 <b>實際體重</b> 計價；選擇「個別 / 團體」、是否特寵（≤2kg），並輸入體重（kg）。</div>
+      <div class="row">
+        <div>
+          <div class="seg" role="tablist" aria-label="火化方式">
+            <button type="button" data-mode="individual" class="active">個別</button>
+            <button type="button" data-mode="group">團體</button>
+          </div>
+          <div class="opt">
+            <label class="opt-inline"><input id="cremSpecial" type="checkbox"> 特寵（≤2kg：倉鼠/兔子/烏龜/鳥等）</label>
+          </div>
+        </div>
+        <div>
+          <input id="kgC" type="number" step="0.01" min="0.01" placeholder="體重（kg）" aria-label="體重（kg）">
+        </div>
+      </div>
+      <div class="out">
+        <div>試算金額</div>
+        <div class="price" id="pC">—</div>
+        <div class="note" id="nC">＊以現場量重與客服確認為準。火化享 10 天免費冰存，超過每日 100 元。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部 CTA 區塊（只留完整價目） -->
+  <div class="cta-bottom">
+    <a href="https://www.starfootprint.com.tw/service/4" target="_blank" rel="noopener" class="btn-solid">完整價目</a>
+  </div>
+
+<script>
+  // ===== 正式價與規則 =====
+  const TIER = {
+    aquamation: {
+      individual: [
+        {max:1,  price:5000},
+        {max:10, price:6500},
+        {max:20, price:7500},
+        {max:30, price:8500},
+        {max:35, price:9500},
+      ],
+      group: [
+        {max:1,  price:1500},
+        {max:10, price:2000},
+        {max:20, price:3000},
+        {max:30, price:3500},
+        {max:35, price:4000},
+      ],
+      over35: {per10kg: 1000}, // >35kg：每 10 公斤 +1000
+      special: {individual: 5000, group: 1500} // 特寵（≤2kg）
+    },
+    cremation: {
+      individual: [
+        {max:10, price:5000},
+        {max:20, price:6000},
+        {max:35, price:7000},
+      ],
+      group: [
+        {max:5,  price:1500},
+        {max:15, price:2500},
+        {max:25, price:3500},
+        {max:35, price:4000},
+      ],
+      over35: {individual: 1000, group: 500}, // >35kg 加價
+      special: {individual: 5000} // 特寵（≤2kg）個別
+    }
+  };
+
+  const nt = n => "NT$ " + Math.round(n).toLocaleString("zh-TW");
+  const ceil10 = x => Math.ceil(x / 10);
+
+  function calcAquamation(kg, mode, special){
+    if(special && kg <= 2){
+      const sp = TIER.aquamation.special[mode];
+      if(sp) return sp;
+    }
+    for(const t of TIER.aquamation[mode]){ if(kg <= t.max) return t.price; }
+    const baseI = TIER.aquamation.individual.find(t=>t.max===35)?.price;
+    const baseG = TIER.aquamation.group.find(t=>t.max===35)?.price;
+    const basePrice = (mode==="group" ? baseG : baseI);
+    const extra = ceil10(kg - 35) * TIER.aquamation.over35.per10kg;
+    return basePrice + extra;
+  }
+
+  function calcCremation(kg, mode, special){
+    if(mode === "individual" && special && kg <= 2){ return TIER.cremation.special.individual; }
+    for(const t of TIER.cremation[mode]){ if(kg <= t.max) return t.price; }
+    const baseI = TIER.cremation.individual.find(t=>t.max===35)?.price || 0;
+    const baseG = TIER.cremation.group.find(t=>t.max===35)?.price || 0;
+    const basePrice = (mode==="group" ? baseG : baseI);
+    const per10 = TIER.cremation.over35[mode];
+    const extra = ceil10(kg - 35) * per10;
+    return basePrice + extra;
+  }
+
+  function setup(boxId, svcKey, kgId, priceId, specialId){
+    const box = document.getElementById(boxId);
+    const seg = box.querySelector(".seg");
+    const kg  = document.getElementById(kgId);
+    const out = document.getElementById(priceId);
+    const sp  = document.getElementById(specialId);
+    let mode = "individual";
+
+    seg.addEventListener("click", e=>{
+      if(e.target.tagName!=="BUTTON")return;
+      seg.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
+      e.target.classList.add("active");
+      mode = e.target.dataset.mode; render();
+    });
+    kg.addEventListener("input", render);
+    sp.addEventListener("change", render);
+
+    function render(){
+      const v = parseFloat(kg.value);
+      if(!v || v<=0){ out.textContent = "—"; return; }
+      const price = (svcKey==="aquamation")
+        ? calcAquamation(v, mode, sp.checked)
+        : calcCremation(v, mode, sp.checked);
+      out.textContent = nt(price);
+    }
+  }
+
+  setup("aqua","aquamation","kgA","pA","aquaSpecial");
+  setup("crem","cremation","kgC","pC","cremSpecial");
+</script>
+</body>
+</html>
