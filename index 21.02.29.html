@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="zh-Hant">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>星足跡｜費用試算（正式價）</title>
@@ -23,13 +24,27 @@
   .note{font-size:12px;color:#667}
   .opt{margin-top:8px;font-size:13px}
   label.opt-inline{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
-  @media (max-width:900px){.wrap{grid-template-columns:1fr} h1{text-align:center} .lead{text-align:center} }
+  @media (max-width:900px){.wrap{grid-template-columns:1fr} h1{text-align:center} .lead{text-align:center}}
   /* Button */
-  .cta-bottom{max-width:980px;margin:0 auto;padding:24px 16px 40px;text-align:center}
-  .btn-solid{display:inline-block;margin:0 8px;padding:12px 20px;border-radius:999px;background:var(--pri);color:#fff;text-decoration:none;font-weight:700}
+  .cta-bottom{max-width:980px;margin:0 auto;padding:24px 16px 60px;text-align:center}
+  .btn-solid{
+    display:inline-block;
+    margin:12px auto;
+    padding:14px 28px;
+    border-radius:999px;
+    background:var(--pri);
+    color:#fff;
+    text-decoration:none;
+    font-weight:700;
+    font-size:16px;
+    box-shadow:var(--shadow);
+    transition:all 0.25s ease;
+  }
+  .btn-solid:hover{background:#256d5f;transform:translateY(-1px)}
 </style>
+</head>
 <body>
-  <h1>費用試算</h1>
+  <h1>費用試算（輸入體重｜正式價）</h1>
   <p class="lead">輸入毛孩體重，即時查看水化／火化、個別／團體估價。</p>
 
   <div id="calc" class="wrap">
@@ -82,13 +97,18 @@
     </div>
   </div>
 
-  <!-- 底部 CTA 區塊（只留完整價目） -->
+  <!-- 底部 CTA 區塊（新版修正） -->
   <div class="cta-bottom">
-    <a href="https://www.starfootprint.com.tw/service/4" target="_blank" rel="noopener" class="btn-solid">完整價目</a>
+    <p style="margin-bottom:12px;color:#334;">想看完整價目與方案？</p>
+    <a href="https://www.starfootprint.com.tw/service/4"
+       target="_blank"
+       rel="noopener noreferrer"
+       class="btn-solid">
+       前往價格頁
+    </a>
   </div>
 
 <script>
-
   // ===== 正式價與規則 =====
   const TIER = {
     aquamation: {
@@ -107,7 +127,7 @@
         {max:35, price:4000},
       ],
       over35: {per10kg: 1000}, // >35kg：每 10 公斤 +1000
-      special: {individual: 5000, group: 1500} // 特寵（≤2kg）
+      special: {individual: 5000, group: 1500}
     },
     cremation: {
       individual: [
@@ -121,8 +141,8 @@
         {max:25, price:3500},
         {max:35, price:4000},
       ],
-      over35: {individual: 1000, group: 500}, // >35kg 加價
-      special: {individual: 5000} // 特寵（≤2kg）個別
+      over35: {individual: 1000, group: 500},
+      special: {individual: 5000}
     }
   };
 
@@ -135,74 +155,52 @@
       if(sp) return sp;
     }
     for(const t of TIER.aquamation[mode]){ if(kg <= t.max) return t.price; }
-    const baseI = TIER.aquamation.individual.find(t=>t.max===35)?.price;
-    const baseG = TIER.aquamation.group.find(t=>t.max===35)?.price;
-    const basePrice = (mode==="group" ? baseG : baseI);
+    const basePrice = (mode==="group"
+      ? TIER.aquamation.group.at(-1).price
+      : TIER.aquamation.individual.at(-1).price);
     const extra = ceil10(kg - 35) * TIER.aquamation.over35.per10kg;
     return basePrice + extra;
   }
 
   function calcCremation(kg, mode, special){
-    if(mode === "individual" && special && kg <= 2){ return TIER.cremation.special.individual; }
+    if(special && mode==="individual" && kg <= 2){
+      return TIER.cremation.special.individual;
+    }
     for(const t of TIER.cremation[mode]){ if(kg <= t.max) return t.price; }
-    const baseI = TIER.cremation.individual.find(t=>t.max===35)?.price || 0;
-    const baseG = TIER.cremation.group.find(t=>t.max===35)?.price || 0;
-    const basePrice = (mode==="group" ? baseG : baseI);
-    const per10 = TIER.cremation.over35[mode];
-    const extra = ceil10(kg - 35) * per10;
-    return basePrice + extra;
+    const base = TIER.cremation[mode].at(-1).price;
+    const extra = TIER.cremation.over35[mode];
+    return base + extra;
   }
 
-  function setup(boxId, svcKey, kgId, priceId, specialId){
-    const box = document.getElementById(boxId);
-    const seg = box.querySelector(".seg");
-    const buttons = seg.querySelectorAll("button");
-    const kgInput = document.getElementById(kgId);
-    const priceOut = document.getElementById(priceId);
-    const special = document.getElementById(specialId);
-
+  function bindCalc(id, fn){
+    const el = document.getElementById(id);
+    const btns = el.querySelectorAll(".seg button");
+    const kgInput = el.querySelector("input[type=number]");
+    const specialInput = el.querySelector("input[type=checkbox]");
+    const priceOut = el.querySelector(".price");
     let mode = "individual";
 
-    // 切換個別/團體按鈕
-    buttons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        buttons.forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        mode = btn.dataset.mode;
+    btns.forEach(b=>{
+      b.onclick=()=>{
+        btns.forEach(x=>x.classList.remove("active"));
+        b.classList.add("active");
+        mode = b.dataset.mode;
         update();
-      });
+      };
     });
-
-    // 體重輸入與特寵勾選監聽
-    kgInput.addEventListener("input", update);
-    special.addEventListener("change", update);
+    [kgInput, specialInput].forEach(x=>x.oninput=update);
 
     function update(){
       const kg = parseFloat(kgInput.value);
-      if(!kg || kg <= 0){
-        priceOut.textContent = "—";
-        return;
-      }
-
-      let price = 0;
-      if(svcKey === "aquamation") price = calcAquamation(kg, mode, special.checked);
-      else price = calcCremation(kg, mode, special.checked);
-
-      priceOut.textContent = nt(price);
+      const special = specialInput.checked;
+      if(!kg || kg<=0){ priceOut.textContent="—"; return; }
+      const p = fn(kg, mode, special);
+      priceOut.textContent = nt(p);
     }
   }
 
-  // 啟動兩個計算區塊
-  setup("aqua", "aquamation", "kgA", "pA", "aquaSpecial");
-  setup("crem", "cremation", "kgC", "pC", "cremSpecial");
-  <div class="cta-bottom">
-  <p>想看完整價目與優惠方案？</p>
-  <a href="https://www.starfootprint.com.tw/service/4"
-     target="_blank"
-     rel="noopener noreferrer"
-     class="btn-solid">
-     前往價格頁
-  </a>
-</div>
-  .btn-solid { pointer-events: auto; }
+  bindCalc("aqua", calcAquamation);
+  bindCalc("crem", calcCremation);
 </script>
+</body>
+</html>
