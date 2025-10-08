@@ -88,6 +88,7 @@
   </div>
 
 <script>
+
   // ===== 正式價與規則 =====
   const TIER = {
     aquamation: {
@@ -155,32 +156,43 @@
   function setup(boxId, svcKey, kgId, priceId, specialId){
     const box = document.getElementById(boxId);
     const seg = box.querySelector(".seg");
-    const kg  = document.getElementById(kgId);
-    const out = document.getElementById(priceId);
-    const sp  = document.getElementById(specialId);
+    const buttons = seg.querySelectorAll("button");
+    const kgInput = document.getElementById(kgId);
+    const priceOut = document.getElementById(priceId);
+    const special = document.getElementById(specialId);
+
     let mode = "individual";
 
-    seg.addEventListener("click", e=>{
-      if(e.target.tagName!=="BUTTON")return;
-      seg.querySelectorAll("button").forEach(b=>b.classList.remove("active"));
-      e.target.classList.add("active");
-      mode = e.target.dataset.mode; render();
+    // 切換個別/團體按鈕
+    buttons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        buttons.forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        mode = btn.dataset.mode;
+        update();
+      });
     });
-    kg.addEventListener("input", render);
-    sp.addEventListener("change", render);
 
-    function render(){
-      const v = parseFloat(kg.value);
-      if(!v || v<=0){ out.textContent = "—"; return; }
-      const price = (svcKey==="aquamation")
-        ? calcAquamation(v, mode, sp.checked)
-        : calcCremation(v, mode, sp.checked);
-      out.textContent = nt(price);
+    // 體重輸入與特寵勾選監聽
+    kgInput.addEventListener("input", update);
+    special.addEventListener("change", update);
+
+    function update(){
+      const kg = parseFloat(kgInput.value);
+      if(!kg || kg <= 0){
+        priceOut.textContent = "—";
+        return;
+      }
+
+      let price = 0;
+      if(svcKey === "aquamation") price = calcAquamation(kg, mode, special.checked);
+      else price = calcCremation(kg, mode, special.checked);
+
+      priceOut.textContent = nt(price);
     }
   }
 
-  setup("aqua","aquamation","kgA","pA","aquaSpecial");
-  setup("crem","cremation","kgC","pC","cremSpecial");
+  // 啟動兩個計算區塊
+  setup("aqua", "aquamation", "kgA", "pA", "aquaSpecial");
+  setup("crem", "cremation", "kgC", "pC", "cremSpecial");
 </script>
-</body>
-</html>
