@@ -5,29 +5,83 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>星足跡｜費用試算（正式價）</title>
 <style>
-  :root{--pri:#2E7D6B;--bg:#F7FBF9;--muted:#566;--r:14px;--shadow:0 8px 24px #0002}
-  *{box-sizing:border-box}
-  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,"Noto Sans TC",sans-serif;margin:0;background:var(--bg);color:#223}
-  h1{font-size:28px;margin:24px 16px 8px;text-align:left}
-  .lead{margin:0 16px 16px;color:#556;line-height:1.6}
-  .wrap{max-width:980px;margin:0 auto;padding:0 16px 8px;display:grid;gap:16px;grid-template-columns:1fr 1fr}
-  .card{background:#fff;border-radius:var(--r);box-shadow:var(--shadow);padding:16px}
-  h3{margin:0 0 8px 0}
-  .sub{color:var(--muted);font-size:13px;margin:4px 0 10px}
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .seg{display:inline-flex;border:1px solid #e5eee9;border-radius:999px;overflow:hidden}
-  .seg button{padding:6px 10px;border:0;background:#fff;cursor:pointer;font-weight:600}
-  .seg button.active{background:var(--pri);color:#fff}
-  input[type=number]{width:100%;padding:10px;border:1px solid #e6e6e6;border-radius:10px}
-  .out{margin-top:10px;padding:12px;border-radius:12px;background:#F7FBF9;border:1px dashed #dbe7e2}
-  .price{font-size:22px;font-weight:900;color:#2E7D6B}
-  .note{font-size:12px;color:#667}
-  .opt{margin-top:8px;font-size:13px}
-  label.opt-inline{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
-  @media (max-width:900px){.wrap{grid-template-columns:1fr} h1{text-align:center} .lead{text-align:center}}
+  :root {
+    --pri:#2E7D6B;
+    --bg:#F7FBF9;
+    --muted:#566;
+    --r:14px;
+    --shadow:0 8px 24px #0002;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,"Noto Sans TC",sans-serif;
+    margin:0;
+    background:var(--bg);
+    color:#223;
+  }
+  h1 { font-size:28px; margin:24px 16px 8px; text-align:left; }
+  .lead { margin:0 16px 16px; color:#556; line-height:1.6; }
+  .wrap {
+    max-width:980px;
+    margin:0 auto;
+    padding:0 16px 8px;
+    display:grid;
+    gap:16px;
+    grid-template-columns:1fr 1fr;
+  }
+  .card {
+    background:#fff;
+    border-radius:var(--r);
+    box-shadow:var(--shadow);
+    padding:16px;
+  }
+  h3 { margin:0 0 8px 0; }
+  .sub { color:var(--muted); font-size:13px; margin:4px 0 10px; }
+  .row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .seg { display:inline-flex; border:1px solid #e5eee9; border-radius:999px; overflow:hidden; }
+  .seg button {
+    padding:6px 10px;
+    border:0;
+    background:#fff;
+    cursor:pointer;
+    font-weight:600;
+  }
+  .seg button.active { background:var(--pri); color:#fff; }
+  input[type=number] {
+    width:100%;
+    padding:10px;
+    border:1px solid #e6e6e6;
+    border-radius:10px;
+  }
+  .out {
+    margin-top:10px;
+    padding:12px;
+    border-radius:12px;
+    background:#F7FBF9;
+    border:1px dashed #dbe7e2;
+  }
+  .price { font-size:22px; font-weight:900; color:#2E7D6B; }
+  .note { font-size:12px; color:#667; }
+  .opt { margin-top:8px; font-size:13px; }
+  label.opt-inline {
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    cursor:pointer;
+  }
+  @media (max-width:900px){
+    .wrap{grid-template-columns:1fr;}
+    h1{text-align:center;}
+    .lead{text-align:center;}
+  }
   /* Button */
-  .cta-bottom{max-width:980px;margin:0 auto;padding:24px 16px 60px;text-align:center}
-  .btn-solid{
+  .cta-bottom {
+    max-width:980px;
+    margin:0 auto;
+    padding:24px 16px 60px;
+    text-align:center;
+  }
+  .btn-solid {
     display:inline-block;
     margin:12px auto;
     padding:14px 28px;
@@ -40,14 +94,20 @@
     box-shadow:var(--shadow);
     transition:all 0.25s ease;
   }
-  .btn-solid:hover{background:#256d5f;transform:translateY(-1px)}
+  .btn-solid:hover {
+    background:#256d5f;
+    transform:translateY(-1px);
+  }
 </style>
 </head>
 <body>
+
   <h1>費用試算（輸入體重｜正式價）</h1>
   <p class="lead">輸入毛孩體重，即時查看水化／火化、個別／團體估價。</p>
 
   <div id="calc" class="wrap">
+
+    <!-- 水化區塊 -->
     <div class="card" id="aqua">
       <h3>水化（Bio Cremation）</h3>
       <div class="sub">依 <b>實際體重</b> 計價；選擇「個別 / 團體」、是否特寵（≤2kg），並輸入體重（kg）。</div>
@@ -58,7 +118,9 @@
             <button type="button" data-mode="group">團體</button>
           </div>
           <div class="opt">
-            <label class="opt-inline"><input id="aquaSpecial" type="checkbox"> 特寵（≤2kg：倉鼠/兔子/烏龜/鳥等）</label>
+            <label class="opt-inline">
+              <input id="aquaSpecial" type="checkbox"> 特寵（≤2kg：倉鼠/兔子/烏龜/鳥等）
+            </label>
           </div>
         </div>
         <div>
@@ -72,6 +134,7 @@
       </div>
     </div>
 
+    <!-- 火化區塊 -->
     <div class="card" id="crem">
       <h3>傳統火化</h3>
       <div class="sub">依 <b>實際體重</b> 計價；選擇「個別 / 團體」、是否特寵（≤2kg），並輸入體重（kg）。</div>
@@ -82,7 +145,9 @@
             <button type="button" data-mode="group">團體</button>
           </div>
           <div class="opt">
-            <label class="opt-inline"><input id="cremSpecial" type="checkbox"> 特寵（≤2kg：倉鼠/兔子/烏龜/鳥等）</label>
+            <label class="opt-inline">
+              <input id="cremSpecial" type="checkbox"> 特寵（≤2kg：倉鼠/兔子/烏龜/鳥等）
+            </label>
           </div>
         </div>
         <div>
@@ -97,8 +162,12 @@
     </div>
   </div>
 
-  </a>
-</div>
+  <!-- 新增：前往價格頁按鈕 -->
+  <div class="cta-bottom">
+    <a href="https://www.starfootprint.com.tw/service/4" class="btn-solid">
+      前往價格頁
+    </a>
+  </div>
 
 <script>
   // ===== 正式價與規則 =====
@@ -118,7 +187,7 @@
         {max:30, price:3500},
         {max:35, price:4000},
       ],
-      over35: {per10kg: 1000}, // >35kg：每 10 公斤 +1000
+      over35: {per10kg: 1000},
       special: {individual: 5000, group: 1500}
     },
     cremation: {
@@ -133,71 +202,11 @@
         {max:25, price:3500},
         {max:35, price:4000},
       ],
-      over35: {individual: 1000, group: 500},
-      special: {individual: 5000}
+      over35: {per10kg: 1000},
+      special: {individual: 5000, group: 1500}
     }
   };
-
-  const nt = n => "NT$ " + Math.round(n).toLocaleString("zh-TW");
-  const ceil10 = x => Math.ceil(x / 10);
-
-  function calcAquamation(kg, mode, special){
-    if(special && kg <= 2){
-      const sp = TIER.aquamation.special[mode];
-      if(sp) return sp;
-    }
-    for(const t of TIER.aquamation[mode]){ if(kg <= t.max) return t.price; }
-    const basePrice = (mode==="group"
-      ? TIER.aquamation.group.at(-1).price
-      : TIER.aquamation.individual.at(-1).price);
-    const extra = ceil10(kg - 35) * TIER.aquamation.over35.per10kg;
-    return basePrice + extra;
-  }
-
-  function calcCremation(kg, mode, special){
-    if(special && mode==="individual" && kg <= 2){
-      return TIER.cremation.special.individual;
-    }
-    for(const t of TIER.cremation[mode]){ if(kg <= t.max) return t.price; }
-    const base = TIER.cremation[mode].at(-1).price;
-    const extra = TIER.cremation.over35[mode];
-    return base + extra;
-  }
-
-  function bindCalc(id, fn){
-    const el = document.getElementById(id);
-    const btns = el.querySelectorAll(".seg button");
-    const kgInput = el.querySelector("input[type=number]");
-    const specialInput = el.querySelector("input[type=checkbox]");
-    const priceOut = el.querySelector(".price");
-    let mode = "individual";
-
-    btns.forEach(b=>{
-      b.onclick=()=>{
-        btns.forEach(x=>x.classList.remove("active"));
-        b.classList.add("active");
-        mode = b.dataset.mode;
-        update();
-      };
-    });
-    [kgInput, specialInput].forEach(x=>x.oninput=update);
-
-    function update(){
-      const kg = parseFloat(kgInput.value);
-      const special = specialInput.checked;
-      if(!kg || kg<=0){ priceOut.textContent="—"; return; }
-      const p = fn(kg, mode, special);
-      priceOut.textContent = nt(p);
-    }
-  }
-
-  bindCalc("aqua", calcAquamation);
-  bindCalc("crem", calcCremation);
-    <div class="cta-bottom">
-    <a href="https://www.starfootprint.com.tw/service/4" class="btn-solid">
-      前往價格頁
-    </a>
-  </div>
 </script>
+
 </body>
 </html>
