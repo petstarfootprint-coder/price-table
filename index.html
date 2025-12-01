@@ -114,22 +114,27 @@ const TIER = {
   },
 
   cremation: {
-    // 個別火化：0–10 / 10–20 / 20–35 / 35–45 / 45–55
+    // ✅ 個別火化：0–10 / 10–20 / 20–35 / 35–45 / 45–55 / 55–65 / 65–75 / 75–85 / 85–95 / 95–100
     individual: [
-      {max:10, price:5000},
-      {max:20, price:6000},
-      {max:35, price:7000},
-      {max:45, price:8000},
-      {max:55, price:9000},
+      {max:10,  price:5000},   // 0–10
+      {max:20,  price:6000},   // 10–20
+      {max:35,  price:7000},   // 20–35
+      {max:45,  price:8000},   // 35–45
+      {max:55,  price:9000},   // 45–55
+      {max:65,  price:10000},  // 55–65
+      {max:75,  price:11000},  // 65–75
+      {max:85,  price:12000},  // 75–85
+      {max:95,  price:13000},  // 85–95
+      {max:100, price:14000},  // 95–100
     ],
-    // 團體火化：維持原本級距＋超過40kg每10kg加500
+    // 團體火化：沿用原本級距，超過40kg每10kg加500
     group: [
       {max:5,  price:1500},
       {max:15, price:2500},
       {max:25, price:3500},
       {max:40, price:4000},
     ],
-    over40: {individual:1000, group:500},
+    over40: {group:500},
     special: {individual:5000, group:5000}
   }
 };
@@ -138,10 +143,10 @@ const nt = n => "NT$ " + Math.round(n).toLocaleString("zh-TW");
 const ceil10 = x => Math.ceil(x / 10);
 
 function calcAquamation(kg, mode, special){
-  if(special && kg <= 2) return TIER.aquamation.special[mode];
+  if (special && kg <= 2) return TIER.aquamation.special[mode];
 
-  for(const t of TIER.aquamation[mode]) {
-    if(kg <= t.max) return t.price;
+  for (const t of TIER.aquamation[mode]) {
+    if (kg <= t.max) return t.price;
   }
 
   const base = TIER.aquamation[mode].at(-1).price;
@@ -150,30 +155,33 @@ function calcAquamation(kg, mode, special){
 }
 
 function calcCremation(kg, mode, special){
-  if(special && kg <= 2) return TIER.cremation.special[mode];
+  if (special && kg <= 2) return TIER.cremation.special[mode];
 
-  // 先看有沒有落在固定級距（0～55 或 0～40）
-  for(const t of TIER.cremation[mode]) {
-    if(kg <= t.max) return t.price;
+  const tiers = TIER.cremation[mode];
+
+  if (mode === "individual") {
+    // ✅ 個別火化：完全照級距表；>100kg 一律用最後一級 14000
+    for (const t of tiers) {
+      if (kg <= t.max) return t.price;
+    }
+    return tiers.at(-1).price;
+  } else {
+    // 團體火化：級距 + 超過40kg每10kg +500
+    for (const t of tiers) {
+      if (kg <= t.max) return t.price;
+    }
+    const base = tiers.at(-1).price; // 40kg = 4000
+    const extra = ceil10(kg - 40) * TIER.cremation.over40.group;
+    return base + extra;
   }
-
-  // 個別火化：超過 55kg，每 10kg +1000，上限算到 100kg = 14000
-  if(mode === "individual"){
-    const base = TIER.cremation.individual.at(-1).price; // 55kg = 9000
-    const steps = ceil10(kg - 55); // 55~65 一級、65~75 兩級...
-    const price = base + steps * 1000;
-    return Math.min(price, 14000); // 最高到 95~100kg = 14000
-  }
-
-  // 團體火化：超過 40kg，每 10kg +500（沿用原本邏輯）
-  const base = TIER.cremation.group.at(-1).price; // 40kg = 4000
-  const extra = ceil10(kg - 40) * TIER.cremation.over40.group;
-  return base + extra;
 }
 
 function updateA(){
   const kg = parseFloat(document.querySelector("#kgA").value);
-  if(!kg){document.querySelector("#pA").textContent="—";return;}
+  if (!kg) {
+    document.querySelector("#pA").textContent = "—";
+    return;
+  }
   const mode = document.querySelector("#aqua button.active").dataset.mode;
   const special = document.querySelector("#aquaSpecial").checked;
   document.querySelector("#pA").textContent = nt(calcAquamation(kg, mode, special));
@@ -181,7 +189,10 @@ function updateA(){
 
 function updateC(){
   const kg = parseFloat(document.querySelector("#kgC").value);
-  if(!kg){document.querySelector("#pC").textContent="—";return;}
+  if (!kg) {
+    document.querySelector("#pC").textContent = "—";
+    return;
+  }
   const mode = document.querySelector("#crem button.active").dataset.mode;
   const special = document.querySelector("#cremSpecial").checked;
   document.querySelector("#pC").textContent = nt(calcCremation(kg, mode, special));
