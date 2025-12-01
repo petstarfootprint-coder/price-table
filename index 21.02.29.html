@@ -18,7 +18,7 @@
   .seg{display:inline-flex;border:1px solid #e5eee9;border-radius:999px;overflow:hidden}
   .seg button{padding:6px 10px;border:0;background:#fff;cursor:pointer;font-weight:600}
   .seg button.active{background:var(--pri);color:#fff}
-  input[type=number]{width:100%;padding:10px;border:1px solid #e6e6e6;border-radius:10px}
+  input[type=number]{width:100%;padding:10px;border:1px solid:#e6e6e6;border-radius:10px}
   .out{margin-top:10px;padding:12px;border-radius:12px;background:#F7FBF9;border:1px dashed #dbe7e2}
   .price{font-size:22px;font-weight:900;color:#2E7D6B}
   .note{font-size:12px;color:#667}
@@ -117,7 +117,7 @@ const TIER = {
     individual: [
       {max:10, price:5000},
       {max:20, price:6000},
-      {max:40, price:7000},
+      {max:30, price:7000}, // ★ 原本是 max:40，改成 30kg 以內 7,000
     ],
     group: [
       {max:5,  price:1500},
@@ -126,7 +126,7 @@ const TIER = {
       {max:40, price:4000},
     ],
     over40: {individual:1000, group:500},
-    special: {individual:5000}
+    special: {individual:5000, group:5000} // ★ 補上 group，避免特寵+團體出錯
   }
 };
 
@@ -146,14 +146,21 @@ function calcAquamation(kg, mode, special){
 function calcCremation(kg, mode, special){
   if(special && kg <= 2) return TIER.cremation.special[mode];
 
-  for(const t of TIER.cremation[mode]) if(kg <= t.max) return t.price;
+  // 先看有沒有落在固定級距表裡
+  for(const t of TIER.cremation[mode]) {
+    if(kg <= t.max) return t.price;
+  }
 
+  // ★ 超出級距的加價規則：
+  // 個別火化：超過 30kg，每 10kg 加 1,000
+  // 團體火化：維持原本設定：超過 40kg，每 10kg 加 500
   const base = TIER.cremation[mode].at(-1).price;
-  const rate = mode==="individual"
-    ? TIER.cremation.over40.individual
-    : TIER.cremation.over40.group;
+  const extraBaseKg = mode === "individual" ? 30 : 40; // ★ 個別從 30 開始加，團體從 40 開始加
+  const rate = mode === "individual"
+    ? 1000
+    : 500;
 
-  const extra = ceil10(kg - 40) * rate;
+  const extra = ceil10(kg - extraBaseKg) * rate;
   return base + extra;
 }
 
