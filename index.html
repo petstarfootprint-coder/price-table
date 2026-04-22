@@ -24,6 +24,8 @@
   .note{font-size:12px;color:#667}
   .opt{margin-top:8px;font-size:13px}
   label.opt-inline{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+  label.opt-inline.disabled{opacity:.45;cursor:not-allowed}
+  input[type=checkbox]:disabled{cursor:not-allowed}
   @media (max-width:900px){.wrap{grid-template-columns:1fr} h1{text-align:center} .lead{text-align:center}}
   .cta-bottom{max-width:980px;margin:0 auto;padding:24px 16px 60px;text-align:center}
   .btn-solid{
@@ -49,21 +51,28 @@
   <div id="calc" class="wrap">
     <div class="card" id="aqua">
       <h3>水化（Bio Cremation）</h3>
-      <div class="sub">依 <b>實際體重</b> 計價；選擇「個別 / 團體」、是否特寵（≤2kg），並輸入體重（kg）。</div>
+      <div class="sub">依 <b>實際體重</b> 計價；選擇「個別 / 團體」、是否特寵（≤2kg）、是否親送，並輸入體重（kg）。</div>
       <div class="row">
         <div>
           <div class="seg">
             <button type="button" data-mode="individual" class="active">個別</button>
             <button type="button" data-mode="group">團體</button>
           </div>
-          <div class="opt"><label class="opt-inline"><input id="aquaSpecial" type="checkbox"> 特寵（≤2kg）</label></div>
+          <div class="opt">
+            <label class="opt-inline"><input id="aquaSpecial" type="checkbox"> 特寵（≤2kg）</label>
+          </div>
+          <div class="opt">
+            <label class="opt-inline disabled" id="aquaSelfDropoffLabel">
+              <input id="aquaSelfDropoff" type="checkbox" disabled> 親送
+            </label>
+          </div>
         </div>
         <div><input id="kgA" type="number" step="0.01" min="0.01" placeholder="體重（kg）"></div>
       </div>
       <div class="out">
         <div>試算金額</div>
         <div class="price" id="pA">—</div>
-        <div class="note">＊以現場量重與客服確認為準。水化享 10 天免費冰存，超過每日 100 元。</div>
+        <div class="note">＊水化特寵（2kg以下）親送優惠價僅限「個別」為 NT$ 4,500；非親送為 NT$ 5,000。以現場量重與客服確認為準。水化享 10 天免費冰存，超過每日 100 元。</div>
       </div>
     </div>
 
@@ -110,24 +119,28 @@ const TIER = {
       {max:40, price:4000},
     ],
     over40: {per10kg:1000},
-    special: {individual:5000, group:1500}
+    special: {
+      individual: {
+        selfDropoff: 4500,
+        standard: 5000
+      },
+      group: 1500
+    }
   },
 
   cremation: {
-    // ✅ 個別火化：0–10 / 10–20 / 20–35 / 35–45 / 45–55 / 55–65 / 65–75 / 75–85 / 85–95 / 95–100
     individual: [
-      {max:10,  price:5000},   // 0–10
-      {max:20,  price:6000},   // 10–20
-      {max:35,  price:7000},   // 20–35
-      {max:45,  price:8000},   // 35–45
-      {max:55,  price:9000},   // 45–55
-      {max:65,  price:10000},  // 55–65
-      {max:75,  price:11000},  // 65–75
-      {max:85,  price:12000},  // 75–85
-      {max:95,  price:13000},  // 85–95
-      {max:100, price:14000},  // 95–100
+      {max:10,  price:5000},
+      {max:20,  price:6000},
+      {max:35,  price:7000},
+      {max:45,  price:8000},
+      {max:55,  price:9000},
+      {max:65,  price:10000},
+      {max:75,  price:11000},
+      {max:85,  price:12000},
+      {max:95,  price:13000},
+      {max:100, price:14000},
     ],
-    // 團體火化：沿用原本級距，超過40kg每10kg加500
     group: [
       {max:5,  price:1500},
       {max:15, price:2500},
@@ -142,8 +155,29 @@ const TIER = {
 const nt = n => "NT$ " + Math.round(n).toLocaleString("zh-TW");
 const ceil10 = x => Math.ceil(x / 10);
 
-function calcAquamation(kg, mode, special){
-  if (special && kg <= 2) return TIER.aquamation.special[mode];
+function syncAquaSelfDropoffState(){
+  const mode = document.querySelector("#aqua button.active").dataset.mode;
+  const special = document.querySelector("#aquaSpecial").checked;
+  const selfDropoff = document.querySelector("#aquaSelfDropoff");
+  const label = document.querySelector("#aquaSelfDropoffLabel");
+
+  const enabled = (mode === "individual" && special);
+
+  selfDropoff.disabled = !enabled;
+  if (!enabled) selfDropoff.checked = false;
+
+  label.classList.toggle("disabled", !enabled);
+}
+
+function calcAquamation(kg, mode, special, selfDropoff){
+  if (special && kg <= 2) {
+    if (mode === "individual") {
+      return selfDropoff
+        ? TIER.aquamation.special.individual.selfDropoff
+        : TIER.aquamation.special.individual.standard;
+    }
+    return TIER.aquamation.special.group;
+  }
 
   for (const t of TIER.aquamation[mode]) {
     if (kg <= t.max) return t.price;
@@ -160,36 +194,40 @@ function calcCremation(kg, mode, special){
   const tiers = TIER.cremation[mode];
 
   if (mode === "individual") {
-    // ✅ 個別火化：完全照級距表；>100kg 一律用最後一級 14000
     for (const t of tiers) {
       if (kg <= t.max) return t.price;
     }
     return tiers.at(-1).price;
   } else {
-    // 團體火化：級距 + 超過40kg每10kg +500
     for (const t of tiers) {
       if (kg <= t.max) return t.price;
     }
-    const base = tiers.at(-1).price; // 40kg = 4000
+    const base = tiers.at(-1).price;
     const extra = ceil10(kg - 40) * TIER.cremation.over40.group;
     return base + extra;
   }
 }
 
 function updateA(){
+  syncAquaSelfDropoffState();
+
   const kg = parseFloat(document.querySelector("#kgA").value);
-  if (!kg) {
+  if (!kg || kg <= 0) {
     document.querySelector("#pA").textContent = "—";
     return;
   }
   const mode = document.querySelector("#aqua button.active").dataset.mode;
   const special = document.querySelector("#aquaSpecial").checked;
-  document.querySelector("#pA").textContent = nt(calcAquamation(kg, mode, special));
+  const selfDropoff = document.querySelector("#aquaSelfDropoff").checked;
+
+  document.querySelector("#pA").textContent = nt(
+    calcAquamation(kg, mode, special, selfDropoff)
+  );
 }
 
 function updateC(){
   const kg = parseFloat(document.querySelector("#kgC").value);
-  if (!kg) {
+  if (!kg || kg <= 0) {
     document.querySelector("#pC").textContent = "—";
     return;
   }
@@ -206,6 +244,7 @@ document.querySelectorAll("#aqua button").forEach(btn=>{
   });
 });
 document.querySelector("#aquaSpecial").addEventListener("change", updateA);
+document.querySelector("#aquaSelfDropoff").addEventListener("change", updateA);
 document.querySelector("#kgA").addEventListener("input", updateA);
 
 document.querySelectorAll("#crem button").forEach(btn=>{
@@ -217,6 +256,9 @@ document.querySelectorAll("#crem button").forEach(btn=>{
 });
 document.querySelector("#cremSpecial").addEventListener("change", updateC);
 document.querySelector("#kgC").addEventListener("input", updateC);
+
+// 初始化
+syncAquaSelfDropoffState();
 </script>
 </body>
 </html>
