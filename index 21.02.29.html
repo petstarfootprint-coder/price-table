@@ -51,7 +51,7 @@
   <div id="calc" class="wrap">
     <div class="card" id="aqua">
       <h3>水化（Bio Cremation）</h3>
-      <div class="sub">依 <b>實際體重</b> 計價；選擇「個別 / 團體」、是否特寵（≤2kg）、是否親送，並輸入體重（kg）。</div>
+      <div class="sub">依 <b>實際體重</b> 計價；選擇「個別 / 團體」、是否特寵（≤2kg），並輸入體重（kg）。</div>
       <div class="row">
         <div>
           <div class="seg">
@@ -72,7 +72,7 @@
       <div class="out">
         <div>試算金額</div>
         <div class="price" id="pA">—</div>
-        <div class="note">＊水化特寵（2kg以下）親送優惠價僅限「個別」為 NT$ 4,500；非親送為 NT$ 5,000。以現場量重與客服確認為準。水化享 10 天免費冰存，超過每日 100 元。</div>
+        <div class="note">＊水化特寵（2kg以下）親送優惠僅限「個別」為 NT$ 4,500；非親送為 NT$ 5,000。以現場量重與客服確認為準。水化享 10 天免費冰存，超過每日 100 元。</div>
       </div>
     </div>
 
@@ -118,14 +118,7 @@ const TIER = {
       {max:30, price:3500},
       {max:40, price:4000},
     ],
-    over40: {per10kg:1000},
-    special: {
-      individual: {
-        selfDropoff: 4500,
-        standard: 5000
-      },
-      group: 1500
-    }
+    over40: {per10kg:1000}
   },
 
   cremation: {
@@ -170,13 +163,12 @@ function syncAquaSelfDropoffState(){
 }
 
 function calcAquamation(kg, mode, special, selfDropoff){
+  // 只有水化有親送優惠
   if (special && kg <= 2) {
     if (mode === "individual") {
-      return selfDropoff
-        ? TIER.aquamation.special.individual.selfDropoff
-        : TIER.aquamation.special.individual.standard;
+      return selfDropoff ? 4500 : 5000;
     }
-    return TIER.aquamation.special.group;
+    return 1500;
   }
 
   for (const t of TIER.aquamation[mode]) {
@@ -189,6 +181,7 @@ function calcAquamation(kg, mode, special, selfDropoff){
 }
 
 function calcCremation(kg, mode, special){
+  // 火化價格全部保留
   if (special && kg <= 2) return TIER.cremation.special[mode];
 
   const tiers = TIER.cremation[mode];
@@ -216,6 +209,7 @@ function updateA(){
     document.querySelector("#pA").textContent = "—";
     return;
   }
+
   const mode = document.querySelector("#aqua button.active").dataset.mode;
   const special = document.querySelector("#aquaSpecial").checked;
   const selfDropoff = document.querySelector("#aquaSelfDropoff").checked;
